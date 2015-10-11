@@ -102,7 +102,7 @@ sudo yum -y install httpd php-mysql php php-gd php-mbstring php-xml mariadb mari
 
 sudo sed -i.orig 's/^;date.timezone =/date.timezone = Asia\/Tokyo/' /etc/php.ini
 
-sudo sed -i.orig 's/^#\(ServerName www.example.com:80\)/ServerName '$site_host':80/' /etc/httpd/conf/httpd.conf
+sudo sed -i.orig 's/^Listen 80/Listen 8080/;s/^#\(ServerName www.example.com:80\)/ServerName '$site_host':8080/' /etc/httpd/conf/httpd.conf
 sudo systemctl start httpd
 sudo systemctl enable httpd
 
