@@ -11,7 +11,7 @@ Options:
   --db-name WORDPRESS_DB_NAME
   --db-user WORDPRESS_DB_USER
   --db-password WORDPRESS_DB_PASSWORD
-  --site-url SITE_URL
+  --site-host SITE_HOST
   --site-title SITE_TITLE
   --admin-name ADMIN_NAME
   --admin-emal ADMIN_EMAIL
@@ -20,7 +20,7 @@ EOF
   exit 1
 }
 
-OPT=`getopt -o h --long help,db-name:,db-user:,db-password:,site-url:,site-title:,admin-name:,admin-email:,admin-password: -- "$@"`
+OPT=`getopt -o h --long help,db-name:,db-user:,db-password:,site-host:,site-title:,admin-name:,admin-email:,admin-password: -- "$@"`
 if [ $? != 0 ] ; then
   usage_exit
 fi
@@ -30,7 +30,7 @@ eval set -- "$OPT"
 db_name=wordpress
 db_user=wordpress
 db_password=password
-site_url="http://192.168.33.18"
+site_host="example.com"
 site_title="ワードプレスのテスト"
 admin_name='admin'
 admin_email="admin@example.com"
@@ -51,8 +51,8 @@ do
     	db_password="$2" 
         shift 2
         ;;
-    --site-url)
-    	site_url="$2" 
+    --site-host)
+    	site_host="$2" 
         shift 2
         ;;
     --site-title)
@@ -89,7 +89,7 @@ set -x
 echo db_name=$db_name
 echo db_user=$db_user
 echo db_password=$db_password
-echo site_url=$site_url
+echo site_host=$site_host
 echo site_title=$site_title
 echo admin_name=$admin_name
 echo admin_email=$admin_email
@@ -102,7 +102,7 @@ sudo yum -y install httpd php-mysql php php-gd php-mbstring php-xml mariadb mari
 
 sudo sed -i.orig 's/^;date.timezone =/date.timezone = Asia\/Tokyo/' /etc/php.ini
 
-sudo sed -i.orig 's/^#\(ServerName www.example.com:80\)/\1/' /etc/httpd/conf/httpd.conf
+sudo sed -i.orig 's/^#\(ServerName www.example.com:80\)/ServerName '$site_host':80/' /etc/httpd/conf/httpd.conf
 sudo systemctl start httpd
 sudo systemctl enable httpd
 
@@ -186,7 +186,7 @@ chmod +x /usr/local/bin/wp
 
 sudo /usr/local/bin/wp core download --path=/var/www/html/ --locale=ja
 sudo /usr/local/bin/wp core config --path=/var/www/html/ --dbname="$db_name" --dbuser="$db_user" --dbpass="$db_password" --dbhost=localhost --locale=ja
-sudo /usr/local/bin/wp core install --path=/var/www/html/ --url="$site_url" --title="$site_title" --admin_name="$admin_name" --admin_email="$admin_email" --admin_password="$admin_password"
+sudo /usr/local/bin/wp core install --path=/var/www/html/ --url="http://$site_host" --title="$site_title" --admin_name="$admin_name" --admin_email="$admin_email" --admin_password="$admin_password"
 sudo /usr/local/bin/wp plugin update --path=/var/www/html/ --all
 sudo /usr/local/bin/wp plugin install wordpress-importer --path=/var/www/html/ --activate
 
