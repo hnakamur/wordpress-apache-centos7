@@ -204,3 +204,8 @@ sudo /usr/local/bin/wp import --path=/var/www/html/ --authors=create wordpress-t
 rm wordpress-theme-test-date-ja.xml
 
 sudo chown -R apache: /var/www/html/*
+
+sudo yum install -y python-virtualenv python-pip
+virtualenv venv
+source venv/bin/activate
+pip install httpie
