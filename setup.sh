@@ -114,6 +114,8 @@ sudo systemctl enable httpd
 sudo sed -i.orig 's/^VARNISH_LISTEN_PORT=6081/VARNISH_LISTEN_PORT=80/' /etc/varnish/varnish.params
 sudo systemctl start varnish
 sudo systemctl enable varnish
+sudo systemctl start varnishncsa
+sudo systemctl enable varnishncsa
 
 sudo systemctl start mariadb
 sudo systemctl enable mariadb
