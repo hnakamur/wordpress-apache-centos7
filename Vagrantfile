@@ -1,8 +1,11 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+PRIVATE_IP_ADDRESS = "192.168.33.18"
+
 Vagrant.configure(2) do |config|
   config.vm.box = "centos/7"
-  config.vm.network "private_network", ip: "192.168.33.18"
-  config.vm.provision "shell", path: "setup.sh"
+  config.vm.network "private_network", ip: PRIVATE_IP_ADDRESS
+  config.vm.provision "shell", path: "setup.sh",
+    args: ["--site-url", "http://#{PRIVATE_IP_ADDRESS}"]
 end

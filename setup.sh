@@ -1,5 +1,99 @@
-#!/bin/sh
+#!/bin/bash
 set -e
+
+usage_exit() {
+  cat <<EOF 1>&2
+Usage: ${0##*/} [OPTIONS]
+  This script setup Apache, MariaDB and Wordpress, then import Japanese test data for WordPress.
+
+Options:
+  -h, --help  print this option
+  --db-name WORDPRESS_DB_NAME
+  --db-user WORDPRESS_DB_USER
+  --db-password WORDPRESS_DB_PASSWORD
+  --site-url SITE_URL
+  --site-title SITE_TITLE
+  --admin-name ADMIN_NAME
+  --admin-emal ADMIN_EMAIL
+  --admin-password ADMIN_PASSWORD
+EOF
+  exit 1
+}
+
+OPT=`getopt -o h --long help,db-name:,db-user:,db-password:,site-url:,site-title:,admin-name:,admin-email:,admin-password: -- "$@"`
+if [ $? != 0 ] ; then
+  usage_exit
+fi
+eval set -- "$OPT"
+
+# default values
+db_name=wordpress
+db_user=wordpress
+db_password=password
+site_url="http://192.168.33.18"
+site_title="ワードプレスのテスト"
+admin_name='admin'
+admin_email="admin@example.com"
+admin_password='password'
+
+while true
+do
+    case "$1" in
+    --db-name)
+    	db_name="$2" 
+        shift 2
+        ;;
+    --db-user)
+    	db_user="$2" 
+        shift 2
+        ;;
+    --db-password)
+    	db_password="$2" 
+        shift 2
+        ;;
+    --site-url)
+    	site_url="$2" 
+        shift 2
+        ;;
+    --site-title)
+    	site_title="$2" 
+        shift 2
+        ;;
+    --admin-name)
+    	admin_name="$2" 
+        shift 2
+        ;;
+    --admin-email)
+    	admin_email="$2" 
+        shift 2
+        ;;
+    --admin-password)
+    	admin_password="$2" 
+        shift 2
+        ;;
+    -h|--help)
+        usage_exit
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        echo "Internal error!" 1>&2
+        exit 1
+        ;;
+    esac
+done
+
+set -x
+echo db_name=$db_name
+echo db_user=$db_user
+echo db_password=$db_password
+echo site_url=$site_url
+echo site_title=$site_title
+echo admin_name=$admin_name
+echo admin_email=$admin_email
+echo admin_password=$admin_password
 
 sudo setenforce 0
 sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/sysconfig/selinux
@@ -82,8 +176,8 @@ EOF
 # Thanks for using MariaDB!
 
 mysql -uroot -Dmysql <<EOF
-create database wordpress;
-grant all on wordpress.* to wordpress identified by 'password';
+create database $db_name;
+grant all on $db_name.* to $db_user identified by '$db_password';
 EOF
 
 curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
@@ -91,8 +185,8 @@ sudo mv wp-cli.phar /usr/local/bin/wp
 chmod +x /usr/local/bin/wp
 
 sudo /usr/local/bin/wp core download --path=/var/www/html/ --locale=ja
-sudo /usr/local/bin/wp core config --path=/var/www/html/ --dbname=wordpress --dbuser=wordpress --dbpass=password --dbhost=localhost --locale=ja
-sudo /usr/local/bin/wp core install --path=/var/www/html/ --url=http://192.168.33.18 --title='ワードプレスのテスト' --admin_name=admin --admin_email=admin@example.com --admin_password=test
+sudo /usr/local/bin/wp core config --path=/var/www/html/ --dbname="$db_name" --dbuser="$db_user" --dbpass="$db_password" --dbhost=localhost --locale=ja
+sudo /usr/local/bin/wp core install --path=/var/www/html/ --url="$site_url" --title="$site_title" --admin_name="$admin_name" --admin_email="$admin_email" --admin_password="$admin_password"
 sudo /usr/local/bin/wp plugin update --path=/var/www/html/ --all
 sudo /usr/local/bin/wp plugin install wordpress-importer --path=/var/www/html/ --activate
 
