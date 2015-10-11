@@ -98,6 +98,11 @@ echo admin_password=$admin_password
 sudo setenforce 0
 sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/sysconfig/selinux
 
+sudo yum install -y epel-release
+sudo yum install -y https://repo.varnish-cache.org/redhat/varnish-4.1.el7.rpm
+sudo yum update -y
+sudo yum install -y varnish mhash-devel
+
 sudo yum -y install httpd php-mysql php php-gd php-mbstring php-xml mariadb mariadb-server curl unzip
 
 sudo sed -i.orig 's/^;date.timezone =/date.timezone = Asia\/Tokyo/' /etc/php.ini
@@ -105,6 +110,10 @@ sudo sed -i.orig 's/^;date.timezone =/date.timezone = Asia\/Tokyo/' /etc/php.ini
 sudo sed -i.orig 's/^Listen 80/Listen 8080/;s/^#\(ServerName www.example.com:80\)/ServerName '$site_host':8080/' /etc/httpd/conf/httpd.conf
 sudo systemctl start httpd
 sudo systemctl enable httpd
+
+sudo sed -i.orig 's/^VARNISH_LISTEN_PORT=6081/VARNISH_LISTEN_PORT=80/' /etc/varnish/varnish.params
+sudo systemctl start varnish
+sudo systemctl enable varnish
 
 sudo systemctl start mariadb
 sudo systemctl enable mariadb
