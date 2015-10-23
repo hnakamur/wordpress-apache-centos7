@@ -211,3 +211,20 @@ sudo yum install -y python-virtualenv python-pip
 virtualenv venv
 source venv/bin/activate
 pip install httpie
+
+## setup varnish vmod build env
+sudo yum install -y varnish-libs-devel varnish-debuginfo python-docutils \
+                    autoconf automake libtool gcc make yum-utils rpm-build rpmdevtools
+rpmdev-setuptree
+
+## download, build and install vmod-example for varnish 4.1.x
+curl -sL -o /home/vagrant/rpmbuild/SOURCES/libvmod-example.tar.gz https://github.com/varnish/libvmod-example/archive/4.1.tar.gz
+tar xf /home/vagrant/rpmbuild/SOURCES/libvmod-example.tar.gz --strip-components=1 -C /home/vagrant/rpmbuild/SPECS/ libvmod-example-4.1/vmod-example.spec
+sed -i.orig '/^%setup -n libvmod-example-trunk/s/trunk/4.1/
+/^%build/a\
+./autogen.sh
+/^mv %{buildroot}\/usr\/share\/doc\/lib%{name} %{buildroot}\/usr\/share\/doc\/%{name}/a\
+rm %{buildroot}/usr/lib64/varnish/vmods/libvmod_example.la
+' /home/vagrant/rpmbuild/SPECS/vmod-example.spec
+rpmbuild -bb /home/vagrant/rpmbuild/SPECS/vmod-example.spec
+sudo rpm -i /home/vagrant/rpmbuild/RPMS/x86_64/vmod-example-*.rpm
