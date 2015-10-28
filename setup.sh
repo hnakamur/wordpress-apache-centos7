@@ -230,7 +230,24 @@ rpmbuild -bb /home/vagrant/rpmbuild/SPECS/vmod-example.spec
 sudo rpm -i /home/vagrant/rpmbuild/RPMS/x86_64/vmod-example-*.rpm
 
 # setup rust
-sudo yum install -y git
+sudo yum install -y git clang
 curl -sfO https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh
 sh blastoff.sh --yes
+
+git clone https://github.com/crabtw/rust-bindgen ~/rust-bindgen
+(cd ~/rust-bindgen && cargo build --release)
+
+git clone https://github.com/tkengo/highway.git ~/highway
+(cd ~/highway && ./tools/build.sh && sudo make install)
+
+mkdir -p ~/vmod-example-rs
+(cd ~/vmod-example-rs && \
+ ~/rust-bindgen/target/release/bindgen -l varnishapi -match vcl.h -o vcl.rs /usr/include/varnish/vcl.h && \
+ ~/rust-bindgen/target/release/bindgen -l varnishapi -match vrt.h -o vrt.rs /usr/include/varnish/vrt.h && \
+ ~/rust-bindgen/target/release/bindgen -I/usr/include/varnish -l varnishapi -match cache.h -o cache.rs \
+   /usr/include/varnish/cache/cache.h && \
+ ~/rust-bindgen/target/release/bindgen -I/usr/include/varnish -l varnishapi -match vcc_if.h -o vcc_if.rs \
+   ~/rpmbuild/SOURCES/libvmod-example-4.1/src/vcc_if.h /usr/include/varnish/vrt.h
+ )
+
 
