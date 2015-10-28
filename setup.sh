@@ -228,3 +228,9 @@ rm %{buildroot}/usr/lib64/varnish/vmods/libvmod_example.la
 ' /home/vagrant/rpmbuild/SPECS/vmod-example.spec
 rpmbuild -bb /home/vagrant/rpmbuild/SPECS/vmod-example.spec
 sudo rpm -i /home/vagrant/rpmbuild/RPMS/x86_64/vmod-example-*.rpm
+
+# setup rust
+sudo yum install -y git
+curl -sfO https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh
+sh blastoff.sh --yes
+
